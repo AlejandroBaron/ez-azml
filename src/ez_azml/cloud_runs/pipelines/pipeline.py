@@ -11,7 +11,7 @@ from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
 
 
 @dataclass
-class Command:
+class PipelineCommand:
     """Class representing a mldesigner Azureml step (mldesigner.command_component).
 
     Args:
@@ -41,7 +41,7 @@ class Pipeline(CloudRun):
     def __init__(
         self,
         experiment_name: str,
-        commands: list[Command],
+        commands: list[PipelineCommand],
         pipeline: Callable,
         dec_kwargs: Optional[dict[str, Any]] = None,
         **kwargs,
@@ -52,7 +52,7 @@ class Pipeline(CloudRun):
         self.dec_kwargs = dec_kwargs or {}
         self.pipeline = pipeline
 
-    def _register_components(self, commands: list[Command]) -> list[Callable]:
+    def _register_components(self, commands: list[PipelineCommand]) -> list[Callable]:
         decorated = []
         kwargs_pattern = r"(\w+)\s*=\s*(['\"]?)(\w+)\2"
         for command in commands:
