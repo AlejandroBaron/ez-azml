@@ -1,0 +1,16 @@
+cloud_run:
+  class_path: ez_azml.cloud_runs.Pipeline
+  init_args:
+    experiment_name: "pipelines example"
+    commands:
+      - function: examples.pipelines.test_fn
+        environment: ../environments/pipeline.yaml
+
+    pipeline: examples.pipelines.test_pipeline
+    compute: ../clusters/cpu_raw.yaml
+    inputs:
+      test_input:
+        class_path: azure.ai.ml.Input
+        init_args:
+            path: "wasbs://demo@dprepdata.blob.core.windows.net/Titanic.csv"
+            type: "uri_file"

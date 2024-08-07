@@ -1,0 +1,4 @@
+class_path: azure.ai.ml.entities.AmlCompute
+init_args:
+    name: ez-azml-cpu
+    size: Standard_D1_v2

@@ -1,0 +1,28 @@
+cloud_run:
+  class_path: ez_azml.cloud_runs.DockerCommand
+  init_args:
+    docker: docker.yaml
+    code: examples
+    compute: ../clusters/cpu.yaml
+    inputs:
+      data_path:
+        class_path: azure.ai.ml.Input
+        init_args:
+          type: uri_folder
+          path: azureml://datastores/workspaceblobstore/paths/data
+          mode: ro_mount
+    outputs:
+      output_path:
+        class_path: azure.ai.ml.Output
+        init_args:
+          type: uri_folder
+          path: azureml://datastores/workspaceblobstore/paths/outputs
+          mode: rw_mount
+    commands: [
+        echo 'This is an example',
+        python pytorch.py
+    ]
+    flags: [
+      "--learning_rate 1e-6",
+      "--output_path ${{outputs.output_path}}"
+    ]

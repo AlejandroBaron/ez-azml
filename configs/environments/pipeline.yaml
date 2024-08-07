@@ -1,0 +1,5 @@
+class_path: azure.ai.ml.entities.Environment
+init_args:
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04
+  name: mldesigner_environment
+  conda_file: configs/environments/conda.yaml

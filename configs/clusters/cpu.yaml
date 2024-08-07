@@ -1,0 +1,4 @@
+class_path: ez_azml.entities.SpotCluster
+init_args:
+    name: ez-azml-cpu
+    size: CPU
