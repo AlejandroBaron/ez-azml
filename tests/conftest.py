@@ -10,26 +10,26 @@ from ez_azml.cloud_runs.pipelines import Pipeline, PipelineCommand
 def command_fn() -> Callable:
     """Function used in mldesigner command component."""
 
-    def _command_fn(
+    def command__fn(
         command_input: mld.Input(type="uri_folder"),  # type: ignore
         command_output: mld.Output(type="uri_folder"),  # type: ignore
     ):
         print("this is a test_fn")
 
-    return _command_fn
+    return command__fn
 
 
 @pytest.fixture()
 def pipeline_fn(command_fn) -> Callable:
     """Function used in azure.ai.ml pipelines."""
 
-    def _pipeline_fn(
+    def pipeline__fn(
         pipeline_input: Input,
         pipeline_output: Output,
     ):
         command_fn(pipeline_input)
 
-    return _pipeline_fn
+    return pipeline__fn
 
 
 @pytest.fixture()
