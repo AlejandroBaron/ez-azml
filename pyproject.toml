@@ -1,5 +1,5 @@
 [project]
-name = "ez_azml"
+name = "ez-azml"
 dynamic = ["version"]
 description = "Simplified yaml/jsonargparse driven framework for AzureML interactions"
 authors = [

@@ -8,3 +8,4 @@ dependencies:
     - mldesigner==0.1.0b17
     - azure-ai-ml==1.18.0
     - azureml-mlflow==1.56.0
+    - ez-azml==0.1.0
