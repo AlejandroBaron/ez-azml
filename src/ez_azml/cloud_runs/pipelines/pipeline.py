@@ -11,7 +11,7 @@ from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
 
 
 @dataclass
-class Command:
+class PipelineCommand:
     """Class representing a mldesigner Azureml step (mldesigner.command_component).
 
     Args:
@@ -27,6 +27,11 @@ class Command:
     def __post_init__(self):
         self.component_kwargs["environment"] = self.environment
 
+    @property
+    def name(self):
+        """Command's name."""
+        return self.function.__name__
+
 
 class Pipeline(CloudRun):
     """Cloud run that uses mldesigner pipelines.
@@ -41,7 +46,7 @@ class Pipeline(CloudRun):
     def __init__(
         self,
         experiment_name: str,
-        commands: list[Command],
+        commands: list[PipelineCommand],
         pipeline: Callable,
         dec_kwargs: Optional[dict[str, Any]] = None,
         **kwargs,
@@ -52,8 +57,9 @@ class Pipeline(CloudRun):
         self.dec_kwargs = dec_kwargs or {}
         self.pipeline = pipeline
 
-    def _register_components(self, commands: list[Command]) -> list[Callable]:
-        decorated = []
+    def _register_components(
+        self, commands: list[PipelineCommand]
+    ) -> list[PipelineCommand]:
         kwargs_pattern = r"(\w+)\s*=\s*(['\"]?)(\w+)\2"
         for command in commands:
             fn = command.function
@@ -68,9 +74,8 @@ class Pipeline(CloudRun):
                     elif "Output(" in hint:
                         hint = mld.Output(**potential_kwargs)
                     fn.__annotations__[parameter] = hint
-            decorated_command = mld.command_component(**command.component_kwargs)(fn)
-            decorated.append(decorated_command)
-        return decorated
+            command.function = mld.command_component(**command.component_kwargs)(fn)
+        return commands
 
     def _build_pipeline(self, pipeline: Callable, dec_kwargs: Optional[dict[str, Any]]):
         # Inject the decorated functions
@@ -80,9 +85,14 @@ class Pipeline(CloudRun):
         return pipeline_dec(**dec_kwargs)(pipeline)
 
     def _setup_dec_kwargs(self, dec_kwargs: dict[str, Any]):
-        dec_kwargs["default_compute"] = dec_kwargs.get(
-            "default_compute", self.compute.name
-        )
+        if self.compute:
+            dec_kwargs["default_compute"] = dec_kwargs.get(
+                "default_compute", self.compute.name
+            )
+        if self.environment:
+            dec_kwargs["default_compute"] = dec_kwargs.get(
+                "default_compute", self.compute.name
+            )
         return dec_kwargs
 
     @override
