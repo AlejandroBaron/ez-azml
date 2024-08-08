@@ -14,7 +14,7 @@ def command_fn() -> Callable:
         command_input: mld.Input(type="uri_folder"),  # type: ignore
         command_output: mld.Output(type="uri_folder"),  # type: ignore
     ):
-        print("this is a test_fn")
+        print("this is a test function")
 
     return command__fn
 

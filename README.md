@@ -17,7 +17,7 @@ It aims to:
 
 Simply run 
 ```bash
-pip install ezazml
+pip install ez-azml
 ```
 # Quickstart
 The main entrypoint is the CLI command. The following command will show you the help

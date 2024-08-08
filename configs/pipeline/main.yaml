@@ -3,10 +3,10 @@ cloud_run:
   init_args:
     experiment_name: "pipelines example"
     commands:
-      - function: examples.pipelines.test_fn
+      - function: examples.pipelines.ez_azml_fn
         environment: ../environments/pipeline.yaml
 
-    pipeline: examples.pipelines.test_pipeline
+    pipeline: examples.pipelines.ez_azml_pipeline
     compute: ../clusters/cpu_raw.yaml
     inputs:
       test_input:

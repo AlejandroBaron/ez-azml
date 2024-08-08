@@ -79,9 +79,8 @@ class Pipeline(CloudRun):
 
     def _build_pipeline(self, pipeline: Callable, dec_kwargs: Optional[dict[str, Any]]):
         # Inject the decorated functions
-        for f in self.commands:
-            pipeline.__globals__[f.__name__] = f
-        f = pipeline_dec(**dec_kwargs)(pipeline)
+        for command in self.commands:
+            pipeline.__globals__[command.name] = command.function
         return pipeline_dec(**dec_kwargs)(pipeline)
 
     def _setup_dec_kwargs(self, dec_kwargs: dict[str, Any]):
