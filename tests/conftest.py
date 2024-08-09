@@ -70,7 +70,7 @@ def pipeline_fn() -> Callable:
         pipeline_input: Input,
         pipeline_output: Output,
     ):
-        test_command(command_input=pipeline_input)  # noqa F821
+        test_command(command_input=pipeline_input)  # type: ignore # noqa F821
 
     return pipeline__fn
 
