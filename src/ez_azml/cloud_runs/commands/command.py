@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import yaml
 from azure.ai.ml import Input, MLClient, Output, command, load_component
@@ -22,22 +22,26 @@ class CommandRun(CloudRun):
 
     def __init__(
         self,
-        code: str,
-        commands: list[str],
+        code: Union[str, Path],
+        commands: Union[str, list[str]],
         ws_connection: Optional[WorkspaceConnection] = None,
         flags: Optional[list[str]] = None,
         identity: Optional[UserIdentityConfiguration] = None,
         name: Optional[str] = None,
+        register_kwargs: Optional[dict[str, Any]] = None,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.ws_connection = ws_connection
         self.identity = identity or UserIdentityConfiguration()
+        if isinstance(commands, str):
+            commands = [commands]
         if flags:
             commands[-1] += " " + " ".join(flags)
         self.commands = commands
         self.code = Path(code)
         self.name = name or self.code.stem
+        self.register_kwargs = register_kwargs or {}
 
     @property
     def cli_command(self) -> str:
@@ -89,14 +93,15 @@ class CommandRun(CloudRun):
         yaml_stream.seek(0)  # Move the file pointer to the beginning
         return yaml_stream
 
-    def _get_component(self, **kwargs):
-        yaml_file = self._get_component_yaml_stream(**kwargs)
+    def get_component(self, **kwargs):
+        """Returns the mldesigner component."""
+        yaml_file = self._get_component_yaml_stream(**self.register_kwargs, **kwargs)
         return load_component(yaml_file)
 
     @override
     def register(self, ml_client: Optional[MLClient] = None, **kwargs):
         ml_client = ml_client or self.ml_client
-        component = self._get_component(**kwargs)
+        component = self.get_component(**kwargs)
         ml_client.components.create_or_update(component)
         return component
 

@@ -1,22 +1,25 @@
+from pathlib import Path
 from typing import Callable
 
-import mldesigner as mld
 import pytest
 from azure.ai.ml import Input, Output
-from ez_azml.cloud_runs.pipelines import Pipeline, PipelineCommand
+from ez_azml.cloud_runs import CommandRun, PipelineRun
 
 
 @pytest.fixture()
-def command_fn() -> Callable:
-    """Function used in mldesigner command component."""
+def command_code_path(tmp_path: Path) -> Path:
+    """Points to tmp file."""
+    path = tmp_path / "test_command.py"
+    path.write_text("""
+    print('this is a test command')
+    """)
+    return path
 
-    def command__fn(
-        command_input: mld.Input(type="uri_folder"),  # type: ignore
-        command_output: mld.Output(type="uri_folder"),  # type: ignore
-    ):
-        print("this is a test function")
 
-    return command__fn
+@pytest.fixture()
+def command(command_code_path: Path):
+    """CommandRun fixture."""
+    return CommandRun(code=command_code_path, commands="python command.py")
 
 
 @pytest.fixture()
@@ -27,22 +30,16 @@ def pipeline_fn(command_fn) -> Callable:
         pipeline_input: Input,
         pipeline_output: Output,
     ):
-        command_fn(pipeline_input)
+        test_command(pipeline_input)  # noqa F821
 
     return pipeline__fn
 
 
 @pytest.fixture()
-def pipeline_command(command_fn: Callable):
-    """PipelineCommand fixture."""
-    return PipelineCommand(function=command_fn)
-
-
-@pytest.fixture()
-def pipeline(pipeline_fn: Callable, pipeline_command: PipelineCommand):
-    """Pipeline cloud run fixture."""
-    return Pipeline(
+def pipeline(pipeline_fn: Callable, command: CommandRun):
+    """PipelineRun cloud run fixture."""
+    return PipelineRun(
         experiment_name="fixture",
-        commands=[pipeline_command],
+        commands=[command],
         pipeline=pipeline_fn,
     )

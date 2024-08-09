@@ -20,7 +20,7 @@ cloud_run:
           mode: rw_mount
     commands: [
         echo 'This is an example',
-        python pytorch.py
+        python pytorch_script.py
     ]
     flags: [
       "--learning_rate 1e-6",

@@ -8,7 +8,7 @@ from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
 from ez_azml.cloud_runs.commands import CommandRun
 
 
-class Pipeline(CloudRun):
+class PipelineRun(CloudRun):
     """Cloud run that uses mldesigner pipelines.
 
     Args:
@@ -24,6 +24,7 @@ class Pipeline(CloudRun):
         commands: dict[str, CommandRun],
         pipeline: Callable,
         dec_kwargs: Optional[dict[str, Any]] = None,
+        register_components: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -35,9 +36,17 @@ class Pipeline(CloudRun):
         self.commands = commands
         self.dec_kwargs = dec_kwargs or {}
         self.pipeline = pipeline
+        self.register_components = register_components
 
-    def _register_components(self, commands: dict[str, CommandRun]) -> list[Component]:
-        return [command.register(self.ml_client) for command in commands.values()]
+    def _get_command_components(
+        self, commands: dict[str, CommandRun]
+    ) -> list[Component]:
+        return [
+            command.register(self.ml_client)
+            if self.register_components
+            else command.get_component()
+            for command in commands.values()
+        ]
 
     def _build_pipeline(
         self,
@@ -49,8 +58,6 @@ class Pipeline(CloudRun):
         for component in components:
             pipeline.__globals__[component.name] = component
         dec_pipeline = pipeline_dec(**dec_kwargs)(pipeline)
-        # for component in components:
-        #     dec_pipeline.__globals__[component.name] = component
         return dec_pipeline
 
     def _setup_dec_kwargs(self, dec_kwargs: dict[str, Any]):
@@ -65,20 +72,17 @@ class Pipeline(CloudRun):
 
     @override
     def register(self):
-        return self.ml_client.jobs.create_or_update(
-            self.pipeline_job, experiment_name=self.experiment_name
-        )
-
-    @override
-    def on_run_start(self):
-        self.components = self._register_components(self.commands)
+        self.components = self._get_command_components(self.commands)
         self.dec_kwargs = self._setup_dec_kwargs(self.dec_kwargs)
         self.pipeline = self._build_pipeline(
             self.pipeline, self.dec_kwargs, self.components
         )
+        self.pipeline_component = self.pipeline(**self.inputs, **self.outputs)
+        return self.ml_client.jobs.create_or_update(
+            self.pipeline_component, experiment_name=self.experiment_name
+        )
 
     @override
     def run(self) -> RunOutput:
-        self.pipeline_job = self.pipeline(**self.inputs, **self.outputs)
         pipe = self.register()
         return RunOutput(url=pipe.studio_url)

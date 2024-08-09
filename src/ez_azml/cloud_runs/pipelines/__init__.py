@@ -1,3 +1,3 @@
-from .pipeline import Pipeline
+from .pipeline import PipelineRun
 
-__all__ = ["Pipeline"]
+__all__ = ["PipelineRun"]

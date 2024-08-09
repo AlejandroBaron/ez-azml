@@ -1,4 +1,4 @@
 from .commands import CommandRun, DockerCommandRun
-from .pipelines import Pipeline
+from .pipelines import PipelineRun
 
-__all__ = ["CommandRun", "DockerCommandRun", "Pipeline"]
+__all__ = ["CommandRun", "DockerCommandRun", "PipelineRun"]

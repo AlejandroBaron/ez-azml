@@ -30,7 +30,7 @@ You can run an example with (if you have cloned the repo)
 ```
 ez-azml --config configs/command/main.yaml run
 ```
-## Pipeline
+## PipelineRun
 ```
 PYTHONPATH=$PYTHONPATH:. ez-azml --config configs/pipeline/main.yaml run
 ```

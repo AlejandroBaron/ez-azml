@@ -1,5 +1,5 @@
 cloud_run:
-  class_path: ez_azml.cloud_runs.Pipeline
+  class_path: ez_azml.cloud_runs.PipelineRun
   init_args:
     experiment_name: "pipelines example"
     commands:
@@ -7,7 +7,7 @@ cloud_run:
         class_path: ez_azml.cloud_runs.DockerCommandRun
         init_args:
           docker: ../dockers/pytorch.yaml
-          code: examples/pytorch.py
+          code: examples/pytorch_script.py
           compute: ../clusters/cpu.yaml
           inputs:
             data_path:
@@ -25,12 +25,15 @@ cloud_run:
                 mode: rw_mount
           commands: [
               echo 'This is an example',
-              python pytorch.py
+              python pytorch_script.py
           ]
           flags: [
             "--learning_rate 1e-6",
             "--output_path ${{outputs.output_path}}"
+            #"The input is ignored, could be used as ${{inputs.data_path}} through flags"
           ]
+          register_kwargs:
+            version: 2
 
     pipeline: examples.pipeline.ez_azml_pipeline
     compute: ../clusters/cpu_raw.yaml
