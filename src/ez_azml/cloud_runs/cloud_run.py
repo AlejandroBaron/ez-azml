@@ -47,3 +47,15 @@ class CloudRun(ABC):
     def on_run_end(self, output: RunOutput):
         """Hook called once run has been submitted."""
         return
+
+    def on_register_start(self):
+        """Hook called before a component has been registered."""
+        return
+
+    @abstractmethod
+    def register(self):
+        """Registers the run as a reusable component."""
+
+    def on_register_end(self):
+        """Hook called after a component has been registered."""
+        return

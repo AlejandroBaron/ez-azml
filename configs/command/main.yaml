@@ -1,7 +1,7 @@
 cloud_run:
-  class_path: ez_azml.cloud_runs.DockerCommand
+  class_path: ez_azml.cloud_runs.DockerCommandRun
   init_args:
-    docker: docker.yaml
+    docker: ../dockers/pytorch.yaml
     code: examples
     compute: ../clusters/cpu.yaml
     inputs:

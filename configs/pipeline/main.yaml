@@ -3,10 +3,36 @@ cloud_run:
   init_args:
     experiment_name: "pipelines example"
     commands:
-      - function: examples.pipelines.ez_azml_fn
-        environment: ../environments/pipeline.yaml
+      torch:
+        class_path: ez_azml.cloud_runs.DockerCommandRun
+        init_args:
+          docker: ../dockers/pytorch.yaml
+          code: examples/pytorch.py
+          compute: ../clusters/cpu.yaml
+          inputs:
+            data_path:
+              class_path: azure.ai.ml.Input
+              init_args:
+                type: uri_folder
+                path: azureml://datastores/workspaceblobstore/paths/data
+                mode: ro_mount
+          outputs:
+            output_path:
+              class_path: azure.ai.ml.Output
+              init_args:
+                type: uri_folder
+                path: azureml://datastores/workspaceblobstore/paths/outputs
+                mode: rw_mount
+          commands: [
+              echo 'This is an example',
+              python pytorch.py
+          ]
+          flags: [
+            "--learning_rate 1e-6",
+            "--output_path ${{outputs.output_path}}"
+          ]
 
-    pipeline: examples.pipelines.ez_azml_pipeline
+    pipeline: examples.pipeline.ez_azml_pipeline
     compute: ../clusters/cpu_raw.yaml
     inputs:
       test_input:
