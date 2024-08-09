@@ -14,10 +14,12 @@ class CommandRun(CloudRun):
     """Cloud run that is based on AzureML Commands.
 
     Args:
-        code: location of the scripts to use
+        code: location of the python scripts to use
         commands: commands to run on the cloud (e.g. `python my_script.py`)
         flags: flags to use with the last command.
         identity: credentials to use.
+        name: command's name.
+        register_kwargs: kwargs to use when registering component.
     """
 
     def __init__(
@@ -77,6 +79,7 @@ class CommandRun(CloudRun):
         inputs_dict = self._get_io_dict(self.inputs)
         outputs_dict = self._get_io_dict(self.outputs)
         if not environment:
+            self.ml_client.environments.create_or_update(self.environment)
             version = self.environment.version or 1
             environment = f"azureml:{self.environment.name}:{version}"
         yaml_dict = {
@@ -109,7 +112,6 @@ class CommandRun(CloudRun):
     def run(self) -> str:
         if self.ws_connection:
             self.ml_client.connections.create_or_update(self.ws_connection)
-        self.ml_client.environments.create_or_update(self.environment)
         self.ml_client.begin_create_or_update(self.compute).result()
         cloud_job = self.ml_client.create_or_update(self.command)
         return RunOutput(url=cloud_job.studio_url)

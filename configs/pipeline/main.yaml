@@ -34,6 +34,24 @@ cloud_run:
           ]
           register_kwargs:
             version: 2
+      command:
+        class_path: ez_azml.cloud_runs.CommandRun
+        init_args:
+          name: print_output
+          compute: ../clusters/cpu.yaml
+          code: examples/print_output.py
+          environment: ../environments/pipeline.yaml
+          inputs:
+            prev_output:
+              class_path: azure.ai.ml.Input
+              init_args:
+                type: uri_folder
+          commands: [
+              echo 'This is an print example',
+              "python print_output.py --path ${{inputs.prev_output}}"
+          ]
+          register_kwargs:
+            version: 2
 
     pipeline: examples.pipeline.ez_azml_pipeline
     compute: ../clusters/cpu_raw.yaml

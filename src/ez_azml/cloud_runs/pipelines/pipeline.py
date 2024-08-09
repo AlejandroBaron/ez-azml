@@ -1,7 +1,7 @@
 from typing import Any, Callable, Optional
 
 from azure.ai.ml.dsl import pipeline as pipeline_dec
-from azure.ai.ml.entities import Component
+from azure.ai.ml.entities import Component, PipelineJob
 from typing_extensions import override
 
 from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
@@ -71,16 +71,20 @@ class PipelineRun(CloudRun):
         return dec_kwargs
 
     @override
-    def register(self):
+    def register(self) -> PipelineJob:
+        for command in self.commands.values():
+            command.ml_client = command.ml_client or self.ml_client
         self.components = self._get_command_components(self.commands)
         self.dec_kwargs = self._setup_dec_kwargs(self.dec_kwargs)
         self.pipeline = self._build_pipeline(
             self.pipeline, self.dec_kwargs, self.components
         )
         self.pipeline_component = self.pipeline(**self.inputs, **self.outputs)
-        return self.ml_client.jobs.create_or_update(
+        # TODO: add tenacity
+        self.ml_client.jobs.create_or_update(
             self.pipeline_component, experiment_name=self.experiment_name
         )
+        return self.pipeline_component
 
     @override
     def run(self) -> RunOutput:
