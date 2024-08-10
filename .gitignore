@@ -162,3 +162,7 @@ cython_debug/
 #.idea/
 .vscode
 tmp
+
+# Sphinx
+_autosummary
+_build

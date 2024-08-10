@@ -13,6 +13,8 @@ It aims to:
 - Be, as it name states, easy to use (hence focused in simple usecases)
 - Unify through wrappers the different flows and runs in Azure through a common interface
 
+You can check more info at the [documentation site](https://ez-azml.readthedocs.io/en/latest/)
+
 # Installation
 
 Simply run 
