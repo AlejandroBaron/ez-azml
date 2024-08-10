@@ -1,12 +1,59 @@
 cloud_run:
-  class_path: ez_azml.cloud_runs.Pipeline
+  class_path: ez_azml.cloud_runs.PipelineRun
   init_args:
     experiment_name: "pipelines example"
     commands:
-      - function: examples.pipelines.test_fn
-        environment: ../environments/pipeline.yaml
+      torch:
+        class_path: ez_azml.cloud_runs.DockerCommandRun
+        init_args:
+          docker: ../dockers/pytorch.yaml
+          code: examples/pytorch_script.py
+          compute: ../clusters/cpu.yaml
+          inputs:
+            data_path:
+              class_path: azure.ai.ml.Input
+              init_args:
+                type: uri_folder
+                path: azureml://datastores/workspaceblobstore/paths/data
+                mode: ro_mount
+          outputs:
+            output_path:
+              class_path: azure.ai.ml.Output
+              init_args:
+                type: uri_folder
+                path: azureml://datastores/workspaceblobstore/paths/outputs
+                mode: rw_mount
+          commands: [
+              echo 'This is an example',
+              python pytorch_script.py
+          ]
+          flags: [
+            "--learning_rate 1e-6",
+            "--output_path ${{outputs.output_path}}"
+            #"The input is ignored, could be used as ${{inputs.data_path}} through flags"
+          ]
+          register_kwargs:
+            version: 2
+      command:
+        class_path: ez_azml.cloud_runs.CommandRun
+        init_args:
+          name: print_output
+          compute: ../clusters/cpu.yaml
+          code: examples/print_output.py
+          environment: ../environments/pipeline.yaml
+          inputs:
+            prev_output:
+              class_path: azure.ai.ml.Input
+              init_args:
+                type: uri_folder
+          commands: [
+              echo 'This is an print example',
+              "python print_output.py --path ${{inputs.prev_output}}"
+          ]
+          register_kwargs:
+            version: 2
 
-    pipeline: examples.pipelines.test_pipeline
+    pipeline: examples.pipeline.ez_azml_pipeline
     compute: ../clusters/cpu_raw.yaml
     inputs:
       test_input:

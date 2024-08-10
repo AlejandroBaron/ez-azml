@@ -2,10 +2,5 @@ name: default_environment
 channels:
   - defaults
 dependencies:
-  - python=3.8.12
+  - python=3.9.12
   - pip=21.2.2
-  - pip:
-    - mldesigner==0.1.0b17
-    - azure-ai-ml==1.18.0
-    - azureml-mlflow==1.56.0
-    - ez-azml==0.1.0

@@ -17,7 +17,7 @@ It aims to:
 
 Simply run 
 ```bash
-pip install ezazml
+pip install ez-azml
 ```
 # Quickstart
 The main entrypoint is the CLI command. The following command will show you the help
@@ -25,12 +25,13 @@ The main entrypoint is the CLI command. The following command will show you the 
 ez-azml -h
 ```
 
-You can run an example with
+You can run an example with (if you have cloned the repo)
 ## Command
 ```
-ez-azml --config configs/pytorch/main.yaml run
+ez-azml --config configs/command/main.yaml run
 ```
-## Pipeline
+## PipelineRun
 ```
-ez-azml --config configs/pipeline/main.yaml run
+PYTHONPATH=$PYTHONPATH:. ez-azml --config configs/pipeline/main.yaml run
 ```
+(`PYTHONPATH` to point to the examples dir. This is not needed if your pipeline is available in any package as an importable function)
