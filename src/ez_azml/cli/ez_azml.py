@@ -16,9 +16,9 @@ class EzAzureMLCLI:
     Args:
         cloud_run: object representing a cloud run
         ml_client: client used for cloud interactions.
-            Will be injected on to the cloud_run if it's lacking one
+        Will be injected on to the cloud_run if it's lacking one
         compute: cluster used to run the `cloud_run`.
-            Will be injected on to the cloud_run if it's lacking one
+        Will be injected on to the cloud_run if it's lacking one
     """
 
     def __init__(

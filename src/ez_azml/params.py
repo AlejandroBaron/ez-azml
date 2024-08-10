@@ -8,12 +8,12 @@ class DockerParams:
     """Dataclass representing a docker setup.
 
     Args:
-        image_name: name of the image, without registry or tag.
-        Defaults to env DOCKER_IMAGE
-        registry: registry hosting the image. Defaults to env DOCKER_REGISTRY
-        tag: image tag. Defaults to env DOCKER_TAG if set, "latest" otherwise
-        username: username to log in to the registry. Defaults to env DOCKER_USERNAME
-        password: password to log in to the registry. Defaults to env DOCKER_PASSWORD
+        image_name: name of the image, without registry or tag. Defaults to env
+            DOCKER_IMAGE.
+        registry: registry hosting the image. Defaults to env DOCKER_REGISTRY.
+        tag: image tag. Defaults to env DOCKER_TAG if set, "latest" otherwise.
+        username: username to log in to the registry. Defaults to env DOCKER_USERNAME.
+        password: password to log in to the registry. Defaults to env DOCKER_PASSWORD.
     """
 
     image_name: str = env.os_field(env.DOCKER_IMAGE)  # noqa: RUF009

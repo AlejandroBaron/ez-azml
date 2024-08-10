@@ -18,13 +18,13 @@ class EzMLClient(MLClient):
 
     Args:
         credential: The credential to use for authentication.
-        Defaults to DefaultAzureCredential()
+            Defaults to DefaultAzureCredential()
         subscription_id: The Azure subscription ID.
-        Defaults to env AZURE_SUBSCRIPTION_ID.
+            Defaults to env AZURE_SUBSCRIPTION_ID.
         resource_group_name: The Azure resource group.
-        Defaults to env AZURE_RESOURCE_GROUP_NAME.
+            Defaults to env AZURE_RESOURCE_GROUP_NAME.
         workspace_name: The workspace to use in the client.
-        Defaults to env AZURE_WORKSPACE.
+            Defaults to env AZURE_WORKSPACE.
     """
 
     def __init__(
