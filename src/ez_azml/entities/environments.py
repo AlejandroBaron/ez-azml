@@ -9,9 +9,9 @@ class DockerEnvironment(Environment):
     """Enviromment for training that uses a docker image.
 
     Args:
-        docker: docker image's parameters
+        docker: docker image's parameters.
         name: environment's name.
-        description: environment's description
+        description: environment's description.
     """
 
     def __init__(

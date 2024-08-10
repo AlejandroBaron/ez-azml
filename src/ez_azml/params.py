@@ -7,7 +7,7 @@ from ez_azml import env
 class DockerParams:
     """Dataclass representing a docker setup.
 
-    Args:
+    Params:
         image_name: name of the image, without registry or tag.
         Defaults to env DOCKER_IMAGE
         registry: registry hosting the image. Defaults to env DOCKER_REGISTRY
