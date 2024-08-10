@@ -1,11 +1,11 @@
 # Configuration file for the Sphinx documentation builder.
-import importlib.metadata
 import os
+import re
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("../../src"))  # src code dir relative to this file
-
-import importlib
+src_path = os.path.abspath("../../src")
+sys.path.insert(0, src_path)  # src code dir relative to this file
 
 # -- Project information
 project = "Easy AzureML"
@@ -13,7 +13,16 @@ copyright = "2024, Alejandro barón"  # noqa A001
 author = "Alejandro Barón"
 
 release = "0.1"
-version = importlib.metadata.version("ez_azml")
+version = "0.1.0"
+try:
+    from ez_azml.__version__ import __version__
+
+    version = __version__
+except ImportError:
+    version_path = Path(src_path) / "ez_azml" / "__version__.py"
+    result = re.search('"([^"]+)"', version_path.read_text())
+    if result:
+        version = result.group(1)
 
 extensions = [
     "sphinx.ext.duration",
