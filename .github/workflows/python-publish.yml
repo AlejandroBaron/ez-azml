@@ -23,5 +23,5 @@ jobs:
       - uses: pdm-project/setup-pdm@v4.1
 
       - name: Publish package distributions to PyPI
-        run: 
+        run:
           pdm publish

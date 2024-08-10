@@ -9,6 +9,10 @@ DOCKER_REGISTRY = "DOCKER_REGISTRY"
 DOCKER_TAG = "DOCKER_TAG"
 DOCKER_IMAGE = "DOCKER_IMAGE"
 
+AZURE_SUBSCRIPTION_ID = "AZURE_SUBSCRIPTION_ID"
+AZURE_RESOURCE_GROUP_NAME = "AZURE_RESOURCE_GROUP_NAME"
+AZURE_WORKSPACE = "AZURE_WORKSPACE"
+
 
 def os_field(env_var: str, default: Optional[str] = None) -> Optional[str]:
     """Dataclass field that retrieves an environment variable.

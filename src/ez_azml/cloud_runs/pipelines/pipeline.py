@@ -1,39 +1,14 @@
-import re
-from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-import mldesigner as mld
 from azure.ai.ml.dsl import pipeline as pipeline_dec
-from azure.ai.ml.entities import Environment
+from azure.ai.ml.entities import Component, PipelineJob
 from typing_extensions import override
 
 from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
+from ez_azml.cloud_runs.commands import CommandRun
 
 
-@dataclass
-class PipelineCommand:
-    """Class representing a mldesigner Azureml step (mldesigner.command_component).
-
-    Args:
-        function: function to be decorated
-        environment: enviroment to run the comand at
-        component_kwargs: kwargs to pass to the `mldesigner.command_component` decorator
-    """
-
-    function: Callable
-    environment: Optional[Environment] = None
-    component_kwargs: Optional[dict[str, Any]] = field(default_factory=dict)
-
-    def __post_init__(self):
-        self.component_kwargs["environment"] = self.environment
-
-    @property
-    def name(self):
-        """Command's name."""
-        return self.function.__name__
-
-
-class Pipeline(CloudRun):
+class PipelineRun(CloudRun):
     """Cloud run that uses mldesigner pipelines.
 
     Args:
@@ -46,43 +21,44 @@ class Pipeline(CloudRun):
     def __init__(
         self,
         experiment_name: str,
-        commands: list[PipelineCommand],
+        commands: dict[str, CommandRun],
         pipeline: Callable,
         dec_kwargs: Optional[dict[str, Any]] = None,
+        register_components: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.experiment_name = experiment_name
+        if isinstance(commands, CommandRun):
+            commands = [commands]
+        if isinstance(commands, list):
+            commands = {command.name: command for command in commands}
         self.commands = commands
         self.dec_kwargs = dec_kwargs or {}
         self.pipeline = pipeline
+        self.register_components = register_components
 
-    def _register_components(
-        self, commands: list[PipelineCommand]
-    ) -> list[PipelineCommand]:
-        kwargs_pattern = r"(\w+)\s*=\s*(['\"]?)(\w+)\2"
-        for command in commands:
-            fn = command.function
-            for parameter in fn.__annotations__:
-                hint = fn.__annotations__[parameter]
-                if isinstance(hint, str):
-                    potential_kwargs = {
-                        key: value for key, _, value in re.findall(kwargs_pattern, hint)
-                    }
-                    if "Input(" in hint:
-                        hint = mld.Input(**potential_kwargs)
-                    elif "Output(" in hint:
-                        hint = mld.Output(**potential_kwargs)
-                    fn.__annotations__[parameter] = hint
-            command.function = mld.command_component(**command.component_kwargs)(fn)
-        return commands
+    def _get_command_components(
+        self, commands: dict[str, CommandRun]
+    ) -> list[Component]:
+        return [
+            command.register(self.ml_client)
+            if self.register_components
+            else command.get_component()
+            for command in commands.values()
+        ]
 
-    def _build_pipeline(self, pipeline: Callable, dec_kwargs: Optional[dict[str, Any]]):
-        # Inject the decorated functions
-        for f in self.commands:
-            pipeline.__globals__[f.__name__] = f
-        f = pipeline_dec(**dec_kwargs)(pipeline)
-        return pipeline_dec(**dec_kwargs)(pipeline)
+    def _build_pipeline(
+        self,
+        pipeline: Callable,
+        dec_kwargs: Optional[dict[str, Any]],
+        components: list[Component],
+    ):
+        # Inject the components
+        for component in components:
+            pipeline.__globals__[component.name] = component
+        dec_pipeline = pipeline_dec(**dec_kwargs)(pipeline)
+        return dec_pipeline
 
     def _setup_dec_kwargs(self, dec_kwargs: dict[str, Any]):
         if self.compute:
@@ -90,21 +66,27 @@ class Pipeline(CloudRun):
                 "default_compute", self.compute.name
             )
         if self.environment:
-            dec_kwargs["default_compute"] = dec_kwargs.get(
-                "default_compute", self.compute.name
-            )
+            # TODO: check correct key
+            dec_kwargs["environment"] = dec_kwargs.get("environment", self.environment)
         return dec_kwargs
 
     @override
-    def on_run_start(self):
-        self.commands = self._register_components(self.commands)
+    def register(self) -> PipelineJob:
+        for command in self.commands.values():
+            command.ml_client = command.ml_client or self.ml_client
+        self.components = self._get_command_components(self.commands)
         self.dec_kwargs = self._setup_dec_kwargs(self.dec_kwargs)
-        self.pipeline = self._build_pipeline(self.pipeline, self.dec_kwargs)
+        self.pipeline = self._build_pipeline(
+            self.pipeline, self.dec_kwargs, self.components
+        )
+        self.pipeline_component = self.pipeline(**self.inputs, **self.outputs)
+        # TODO: add tenacity
+        self.ml_client.jobs.create_or_update(
+            self.pipeline_component, experiment_name=self.experiment_name
+        )
+        return self.pipeline_component
 
     @override
     def run(self) -> RunOutput:
-        pipeline_job = self.pipeline(**self.inputs, **self.outputs)
-        pipe = self.ml_client.jobs.create_or_update(
-            pipeline_job, experiment_name=self.experiment_name
-        )
+        pipe = self.register()
         return RunOutput(url=pipe.studio_url)

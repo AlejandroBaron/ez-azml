@@ -43,3 +43,10 @@ class EzAzureMLCLI:
         output = self.cloud_run.run()
         logger.info(f"Run available at {output.url}")
         self.cloud_run.on_run_end(output)
+
+    def register(self):
+        """Registers the cloud run as a reusable component."""
+        self.cloud_run.on_register_start()
+        self.cloud_run.register()
+        self.cloud_run.on_register_end()
+        logger.info("Cloud run registered!")

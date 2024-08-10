@@ -6,6 +6,12 @@ from azure.ai.ml import MLClient
 from azure.core.credentials import TokenCredential
 from azure.identity import DefaultAzureCredential
 
+from ez_azml.env import (
+    AZURE_RESOURCE_GROUP_NAME,
+    AZURE_SUBSCRIPTION_ID,
+    AZURE_WORKSPACE,
+)
+
 
 class EzMLClient(MLClient):
     """A easy client class to interact with Azure ML services.
@@ -30,11 +36,11 @@ class EzMLClient(MLClient):
         **kwargs: Any,
     ) -> None:
         credential = credential or DefaultAzureCredential()
-        subscription_id = subscription_id or os.getenv("AZURE_SUBSCRIPTION_ID")
+        subscription_id = subscription_id or os.getenv(AZURE_SUBSCRIPTION_ID)
         resource_group_name = resource_group_name or os.getenv(
-            "AZURE_RESOURCE_GROUP_NAME"
+            AZURE_RESOURCE_GROUP_NAME
         )
-        workspace_name = workspace_name or os.getenv("AZURE_WORKSPACE")
+        workspace_name = workspace_name or os.getenv(AZURE_WORKSPACE)
         super().__init__(
             credential, subscription_id, resource_group_name, workspace_name, **kwargs
         )

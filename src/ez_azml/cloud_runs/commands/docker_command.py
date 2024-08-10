@@ -1,10 +1,10 @@
 from ez_azml.entities import DockerEnvironment, DockerWorkspaceConnection
 from ez_azml.params import DockerParams
 
-from .command import Command
+from .command import CommandRun
 
 
-class DockerCommand(Command):
+class DockerCommandRun(CommandRun):
     """A Command that uses a docker image.
 
     Args:

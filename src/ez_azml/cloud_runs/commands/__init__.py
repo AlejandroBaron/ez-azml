@@ -1,4 +1,4 @@
-from .command import Command
-from .docker_command import DockerCommand
+from .command import CommandRun
+from .docker_command import DockerCommandRun
 
-__all__ = ["DockerCommand", "Command"]
+__all__ = ["DockerCommandRun", "CommandRun"]
