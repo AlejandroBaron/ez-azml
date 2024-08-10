@@ -3,20 +3,7 @@ from unittest import mock
 import pytest
 from ez_azml.params import DockerParams  # Replace with the actual import path
 
-# Mock environment variables
-mock_env_vars = {
-    "DOCKER_IMAGE": "mock_image",
-    "DOCKER_REGISTRY": "mock_registry",
-    "DOCKER_TAG": "mock_tag",
-    "DOCKER_USERNAME": "mock_username",
-    "DOCKER_PASSWORD": "mock_password",
-}
-
-
-# Mock env.os_field function to return environment variables
-def mock_os_getenv(env_var, default=None):
-    """Mocks getenv."""
-    return mock_env_vars.get(env_var, default)
+from tests.utils import mock_env_vars, mock_os_getenv
 
 
 @pytest.mark.parametrize(
