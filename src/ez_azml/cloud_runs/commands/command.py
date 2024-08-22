@@ -1,10 +1,12 @@
 import io
+import os
 from pathlib import Path
 from typing import Any, Optional, Union
 
 import yaml
 from azure.ai.ml import Input, MLClient, Output, command, load_component
 from azure.ai.ml.entities import Command, UserIdentityConfiguration, WorkspaceConnection
+from loguru import logger
 from typing_extensions import override
 
 from ez_azml.cloud_runs.cloud_run import CloudRun, RunOutput
@@ -31,6 +33,7 @@ class CommandRun(CloudRun):
         identity: Optional[UserIdentityConfiguration] = None,
         name: Optional[str] = None,
         register_kwargs: Optional[dict[str, Any]] = None,
+        command_kwargs: Optional[dict[str, Any]] = None,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -44,6 +47,7 @@ class CommandRun(CloudRun):
         self.code = Path(code)
         self.name = name or self.code.stem
         self.register_kwargs = register_kwargs or {}
+        self.command_kwargs = self._process_command_kwargs(command_kwargs or {})
 
     @property
     def cli_command(self) -> str:
@@ -61,7 +65,20 @@ class CommandRun(CloudRun):
             inputs=self.inputs,
             outputs=self.outputs,
             identity=self.identity,
+            **self.command_kwargs,
         )
+
+    def _process_command_kwargs(command_kwargs: dict[str, Any]):
+        environment_variables = command_kwargs.get("environment_variables", {})
+        for k, v in environment_variables.items():
+            getenv_attempt = os.getenv(v)
+            if getenv_attempt:
+                logger.debug(
+                    f"Found value for environment_variables pair {k}:{v}." " Parsing it"
+                )
+                environment_variables[k] = getenv_attempt
+        command_kwargs["environment_variables"] = environment_variables
+        return command_kwargs
 
     def _get_io_dict(
         self, ios: dict[str, Union[Input, Output]], keys: Optional[list[str]] = None

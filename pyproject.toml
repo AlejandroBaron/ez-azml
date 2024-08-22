@@ -34,8 +34,7 @@ distribution = true
 [tool.pdm.version]
 source = "scm"
 fallback_version = "0.1.0"
-write_to = "ez_azml/__version__.py"
-write_template = '__version__ = "{}"'
+write_to = "ez_azml/version.info"
 
 [tool.ruff]
 line-length = 88
