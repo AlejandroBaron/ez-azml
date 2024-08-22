@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from unittest import mock
 
 import yaml
 from azure.ai.ml.entities import CommandComponent
@@ -23,3 +25,15 @@ def test_e2e_register(command: CommandRun):
     """Tests e2e mock register."""
     component = command.register()
     assert isinstance(component, CommandComponent)
+
+
+def test_command_kwargs_env_parsing(command: CommandRun):
+    """Tests that parsing env variables works when processing command kwargs."""
+
+    REMOTE_KEY = "REMOTE_ENV"
+    LOCAL_KEY = "LOCAL_ENV"
+    mock_env_value = "mock_env_value"
+    command_kwargs = {"environment_variables": {REMOTE_KEY: LOCAL_KEY}}
+    with mock.patch.dict(os.environ, {LOCAL_KEY: mock_env_value}):
+        parsed_command_kwargs = command._process_command_kwargs(command_kwargs)
+    assert parsed_command_kwargs["environment_variables"][REMOTE_KEY] == mock_env_value

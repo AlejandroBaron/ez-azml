@@ -68,7 +68,7 @@ class CommandRun(CloudRun):
             **self.command_kwargs,
         )
 
-    def _process_command_kwargs(command_kwargs: dict[str, Any]):
+    def _process_command_kwargs(self, command_kwargs: dict[str, Any]):
         environment_variables = command_kwargs.get("environment_variables", {})
         for k, v in environment_variables.items():
             getenv_attempt = os.getenv(v)
